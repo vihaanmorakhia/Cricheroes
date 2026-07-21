@@ -16,6 +16,9 @@ interface Team {
   players: Player[];
   totalRuns: number;
   wicketsLost: number;
+  byes: number;
+  wides: number;
+  noBalls: number;
 }
 
 export default function Match() {
@@ -31,6 +34,9 @@ export default function Match() {
     ],
     totalRuns: 0,
     wicketsLost: 0,
+    byes: 0,
+    wides: 0,
+    noBalls: 0,
   });
 
   const [team2, setTeam2] = useState<Team>({
@@ -42,6 +48,9 @@ export default function Match() {
     ],
     totalRuns: 0,
     wicketsLost: 0,
+    byes: 0,
+    wides: 0,
+    noBalls: 0,
   });
 
   const [currentBatter, setCurrentBatter] = useState('1');
@@ -58,7 +67,73 @@ export default function Match() {
     });
 
     const totalRuns = updatedPlayers.reduce((sum, p) => sum + p.runs, 0);
-    const updatedTeam = { ...team, players: updatedPlayers, totalRuns };
+    const extraRuns = team.byes + team.wides + team.noBalls;
+    const updatedTeam = { ...team, players: updatedPlayers, totalRuns: totalRuns + extraRuns };
+
+    if (teamIndex === 1) {
+      setTeam1(updatedTeam);
+    } else {
+      setTeam2(updatedTeam);
+    }
+  };
+
+  const addBattingRuns = (teamIndex: number, playerId: string, runs: number) => {
+    const team = teamIndex === 1 ? team1 : team2;
+    const updatedPlayers = team.players.map(p => {
+      if (p.id === playerId && !p.isOut) {
+        return { ...p, runs: p.runs + runs, balls: p.balls + 1 };
+      }
+      return p;
+    });
+
+    const totalRuns = updatedPlayers.reduce((sum, p) => sum + p.runs, 0);
+    const extraRuns = team.byes + team.wides + team.noBalls;
+    const updatedTeam = { ...team, players: updatedPlayers, totalRuns: totalRuns + extraRuns };
+
+    if (teamIndex === 1) {
+      setTeam1(updatedTeam);
+    } else {
+      setTeam2(updatedTeam);
+    }
+  };
+
+  const addByes = (teamIndex: number, runs: number) => {
+    const team = teamIndex === 1 ? team1 : team2;
+    const updatedTeam = {
+      ...team,
+      byes: team.byes + runs,
+      totalRuns: team.totalRuns + runs,
+    };
+
+    if (teamIndex === 1) {
+      setTeam1(updatedTeam);
+    } else {
+      setTeam2(updatedTeam);
+    }
+  };
+
+  const addWides = (teamIndex: number) => {
+    const team = teamIndex === 1 ? team1 : team2;
+    const updatedTeam = {
+      ...team,
+      wides: team.wides + 1,
+      totalRuns: team.totalRuns + 1,
+    };
+
+    if (teamIndex === 1) {
+      setTeam1(updatedTeam);
+    } else {
+      setTeam2(updatedTeam);
+    }
+  };
+
+  const addNoBalls = (teamIndex: number, runs: number = 1) => {
+    const team = teamIndex === 1 ? team1 : team2;
+    const updatedTeam = {
+      ...team,
+      noBalls: team.noBalls + 1,
+      totalRuns: team.totalRuns + runs,
+    };
 
     if (teamIndex === 1) {
       setTeam1(updatedTeam);
@@ -137,12 +212,18 @@ export default function Match() {
                 <span className="runs">{team1.totalRuns}</span>
                 <span className="wickets">/{team1.wicketsLost}</span>
               </div>
+              <div className="extras">
+                Byes: {team1.byes} | Wides: {team1.wides} | NoBalls: {team1.noBalls}
+              </div>
             </div>
             <div className="score-box">
               <h3>{team2.name}</h3>
               <div className="score-display">
                 <span className="runs">{team2.totalRuns}</span>
                 <span className="wickets">/{team2.wicketsLost}</span>
+              </div>
+              <div className="extras">
+                Byes: {team2.byes} | Wides: {team2.wides} | NoBalls: {team2.noBalls}
               </div>
             </div>
           </div>
@@ -170,6 +251,52 @@ export default function Match() {
               </button>
               <button onClick={() => markPlayerOut(1, currentBatter)} className="btn btn-sm btn-danger">
                 OUT
+              </button>
+            </div>
+
+            <h3 style={{ marginTop: '20px' }}>Extras & Special Cases</h3>
+            <div className="button-group">
+              <button onClick={() => addByes(1, 1)} className="btn btn-sm btn-info">
+                1 BYE
+              </button>
+              <button onClick={() => addByes(1, 2)} className="btn btn-sm btn-info">
+                2 BYES
+              </button>
+              <button onClick={() => addByes(1, 3)} className="btn btn-sm btn-info">
+                3 BYES
+              </button>
+              <button onClick={() => addBattingRuns(1, currentBatter, 1)} className="btn btn-sm btn-success">
+                1 (Batter runs on bye)
+              </button>
+              <button onClick={() => addBattingRuns(1, currentBatter, 2)} className="btn btn-sm btn-success">
+                2 (Batter runs on bye)
+              </button>
+            </div>
+
+            <div className="button-group">
+              <button onClick={() => addWides(1)} className="btn btn-sm btn-warning">
+                WIDE (+1)
+              </button>
+              <button onClick={() => addBattingRuns(1, currentBatter, 1)} className="btn btn-sm btn-success">
+                1 (Batter on wide)
+              </button>
+              <button onClick={() => addBattingRuns(1, currentBatter, 2)} className="btn btn-sm btn-success">
+                2 (Batter on wide)
+              </button>
+            </div>
+
+            <div className="button-group">
+              <button onClick={() => addNoBalls(1, 1)} className="btn btn-sm btn-warning">
+                NO BALL (+1)
+              </button>
+              <button onClick={() => addNoBalls(1, 2)} className="btn btn-sm btn-warning">
+                NO BALL (+2)
+              </button>
+              <button onClick={() => addBattingRuns(1, currentBatter, 1)} className="btn btn-sm btn-success">
+                1 (Batter on no-ball)
+              </button>
+              <button onClick={() => addBattingRuns(1, currentBatter, 2)} className="btn btn-sm btn-success">
+                2 (Batter on no-ball)
               </button>
             </div>
           </div>
