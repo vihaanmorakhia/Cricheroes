@@ -8,17 +8,104 @@ interface Player {
   runs: number;
   balls: number;
   wickets: number;
+  isOut: boolean;
+}
+
+interface Team {
+  name: string;
+  players: Player[];
+  totalRuns: number;
+  wicketsLost: number;
 }
 
 export default function Match() {
   const router = useRouter();
   const { id } = router.query;
   
-  const [players] = useState<Player[]>([
-    { id: '1', name: 'Virat Kohli', runs: 85, balls: 52, wickets: 0 },
-    { id: '2', name: 'Rohit Sharma', runs: 45, balls: 38, wickets: 0 },
-    { id: '3', name: 'Jasprit Bumrah', runs: 0, balls: 0, wickets: 2 }
-  ]);
+  const [team1, setTeam1] = useState<Team>({
+    name: 'Tigers',
+    players: [
+      { id: '1', name: 'Virat Kohli', runs: 0, balls: 0, wickets: 0, isOut: false },
+      { id: '2', name: 'Rohit Sharma', runs: 0, balls: 0, wickets: 0, isOut: false },
+      { id: '3', name: 'Suresh Raina', runs: 0, balls: 0, wickets: 0, isOut: false },
+    ],
+    totalRuns: 0,
+    wicketsLost: 0,
+  });
+
+  const [team2, setTeam2] = useState<Team>({
+    name: 'Lions',
+    players: [
+      { id: '4', name: 'Jasprit Bumrah', runs: 0, balls: 0, wickets: 0, isOut: false },
+      { id: '5', name: 'Yuzvendra Chahal', runs: 0, balls: 0, wickets: 0, isOut: false },
+      { id: '6', name: 'Hardik Pandya', runs: 0, balls: 0, wickets: 0, isOut: false },
+    ],
+    totalRuns: 0,
+    wicketsLost: 0,
+  });
+
+  const [currentBatter, setCurrentBatter] = useState('1');
+  const [currentBowler, setCurrentBowler] = useState('4');
+  const [innings, setInnings] = useState(1);
+
+  const updatePlayerScore = (teamIndex: number, playerId: string, runs: number, balls: number = 1) => {
+    const team = teamIndex === 1 ? team1 : team2;
+    const updatedPlayers = team.players.map(p => {
+      if (p.id === playerId && !p.isOut) {
+        return { ...p, runs: p.runs + runs, balls: p.balls + balls };
+      }
+      return p;
+    });
+
+    const totalRuns = updatedPlayers.reduce((sum, p) => sum + p.runs, 0);
+    const updatedTeam = { ...team, players: updatedPlayers, totalRuns };
+
+    if (teamIndex === 1) {
+      setTeam1(updatedTeam);
+    } else {
+      setTeam2(updatedTeam);
+    }
+  };
+
+  const markPlayerOut = (teamIndex: number, playerId: string) => {
+    const team = teamIndex === 1 ? team1 : team2;
+    const updatedPlayers = team.players.map(p => {
+      if (p.id === playerId) {
+        return { ...p, isOut: true };
+      }
+      return p;
+    });
+
+    const updatedTeam = {
+      ...team,
+      players: updatedPlayers,
+      wicketsLost: team.wicketsLost + 1,
+    };
+
+    if (teamIndex === 1) {
+      setTeam1(updatedTeam);
+    } else {
+      setTeam2(updatedTeam);
+    }
+  };
+
+  const updateBowlerWickets = (teamIndex: number, playerId: string) => {
+    const team = teamIndex === 1 ? team1 : team2;
+    const updatedPlayers = team.players.map(p => {
+      if (p.id === playerId) {
+        return { ...p, wickets: p.wickets + 1 };
+      }
+      return p;
+    });
+
+    const updatedTeam = { ...team, players: updatedPlayers };
+
+    if (teamIndex === 1) {
+      setTeam1(updatedTeam);
+    } else {
+      setTeam2(updatedTeam);
+    }
+  };
 
   return (
     <div className="container">
@@ -35,15 +122,59 @@ export default function Match() {
       </nav>
 
       <main className="main">
-        <h2>Match {id} - Scorecard</h2>
+        <h2>Match {id} - Live Scorecard - Innings {innings}</h2>
         
         <div className="scorecard">
           <div className="match-info">
-            <div className="team">Tigers vs Lions</div>
-            <div className="status ongoing">Ongoing</div>
+            <div className="team">{team1.name} vs {team2.name}</div>
+            <div className="status ongoing">LIVE</div>
           </div>
 
-          <h3>Batting</h3>
+          <div className="scores-row">
+            <div className="score-box">
+              <h3>{team1.name}</h3>
+              <div className="score-display">
+                <span className="runs">{team1.totalRuns}</span>
+                <span className="wickets">/{team1.wicketsLost}</span>
+              </div>
+            </div>
+            <div className="score-box">
+              <h3>{team2.name}</h3>
+              <div className="score-display">
+                <span className="runs">{team2.totalRuns}</span>
+                <span className="wickets">/{team2.wicketsLost}</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="controls-section">
+            <h3>Quick Scoring - {team1.name}</h3>
+            <div className="button-group">
+              <button onClick={() => updatePlayerScore(1, currentBatter, 0, 1)} className="btn btn-sm">
+                DOT
+              </button>
+              <button onClick={() => updatePlayerScore(1, currentBatter, 1)} className="btn btn-sm btn-primary">
+                1 RUN
+              </button>
+              <button onClick={() => updatePlayerScore(1, currentBatter, 2)} className="btn btn-sm btn-primary">
+                2 RUNS
+              </button>
+              <button onClick={() => updatePlayerScore(1, currentBatter, 3)} className="btn btn-sm btn-primary">
+                3 RUNS
+              </button>
+              <button onClick={() => updatePlayerScore(1, currentBatter, 4)} className="btn btn-sm btn-accent">
+                4 RUNS
+              </button>
+              <button onClick={() => updatePlayerScore(1, currentBatter, 6)} className="btn btn-sm btn-accent">
+                6 RUNS
+              </button>
+              <button onClick={() => markPlayerOut(1, currentBatter)} className="btn btn-sm btn-danger">
+                OUT
+              </button>
+            </div>
+          </div>
+
+          <h3>Batting - {team1.name}</h3>
           <table className="scorecard-table">
             <thead>
               <tr>
@@ -51,39 +182,67 @@ export default function Match() {
                 <th>Runs</th>
                 <th>Balls</th>
                 <th>Strike Rate</th>
+                <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              {players.map(player => (
-                <tr key={player.id}>
-                  <td>{player.name}</td>
+              {team1.players.map(player => (
+                <tr key={player.id} className={player.isOut ? 'out' : ''}>
+                  <td>
+                    <input
+                      type="radio"
+                      name="batter"
+                      value={player.id}
+                      checked={currentBatter === player.id}
+                      onChange={() => setCurrentBatter(player.id)}
+                    />
+                    {player.name}
+                  </td>
                   <td>{player.runs}</td>
                   <td>{player.balls}</td>
                   <td>{player.balls > 0 ? ((player.runs / player.balls) * 100).toFixed(2) : '0.00'}%</td>
+                  <td>{player.isOut ? '❌ OUT' : '✓ Not Out'}</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
-          <h3>Bowling</h3>
+          <h3>Bowling - {team2.name}</h3>
           <table className="scorecard-table">
             <thead>
               <tr>
                 <th>Player</th>
                 <th>Wickets</th>
-                <th>Runs Conceded</th>
+                <th>Select</th>
               </tr>
             </thead>
             <tbody>
-              {players.filter(p => p.wickets > 0).map(player => (
+              {team2.players.map(player => (
                 <tr key={player.id}>
                   <td>{player.name}</td>
                   <td>{player.wickets}</td>
-                  <td>12</td>
+                  <td>
+                    <input
+                      type="radio"
+                      name="bowler"
+                      value={player.id}
+                      checked={currentBowler === player.id}
+                      onChange={() => setCurrentBowler(player.id)}
+                    />
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+
+          <div className="button-group" style={{ marginTop: '20px' }}>
+            <button onClick={() => updateBowlerWickets(2, currentBowler)} className="btn btn-primary">
+              Add Wicket to Current Bowler
+            </button>
+            <button onClick={() => setInnings(innings === 1 ? 2 : 1)} className="btn btn-accent">
+              Switch Innings
+            </button>
+          </div>
         </div>
       </main>
 
