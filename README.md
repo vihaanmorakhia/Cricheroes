@@ -1,4 +1,4 @@
-# 🏏 CricHeroes
+# 🏏 CricStars
 
 A modern cricket match organization and player scoring platform built with Next.js.
 
@@ -8,6 +8,7 @@ A modern cricket match organization and player scoring platform built with Next.
 - 📊 **Player Scoring** - Track player performances with runs, wickets, and statistics
 - 📈 **Statistics** - View player stats, averages, and performance metrics
 - 🏏 **Match Scorecard** - Real-time scorecards with batting and bowling details
+- 🎯 **Comprehensive Scoring** - Track byes, wides, no-balls, and batter runs
 - 📱 **Responsive Design** - Works seamlessly on desktop and mobile devices
 - 🎨 **Modern UI** - Beautiful, intuitive user interface
 
@@ -29,8 +30,8 @@ A modern cricket match organization and player scoring platform built with Next.
 
 ```bash
 # Clone the repository
-git clone https://github.com/vihaanmorakhia/Cricheroes.git
-cd Cricheroes
+git clone https://github.com/vihaanmorakhia/CricStars.git
+cd CricStars
 
 # Install dependencies
 npm install
@@ -47,6 +48,15 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 2. **Track Scores** - Add player scores and statistics during the match
 3. **View Stats** - Check player performance and match results
 4. **Share Results** - View and share match scorecards
+
+## Scoring Features
+
+- **Batter Runs**: 0-6 runs per ball with strike rate calculation
+- **Byes**: 1-3 byes with batter getting additional runs
+- **Wides**: Track wide deliveries with runs and batter runs on wides
+- **No-Balls**: Track illegal deliveries with variable runs
+- **Wickets**: Mark batters out and track bowler wickets
+- **Innings**: Manage multiple innings in a match
 
 ## Deployment
 
@@ -75,7 +85,7 @@ npm start
 │   ├── matches.tsx         # Matches list
 │   ├── new-match.tsx       # Create new match
 │   ├── players.tsx         # Players statistics
-│   └── match/[id].tsx      # Match scorecard
+│   └── match/[id].tsx      # Match scorecard with live scoring
 ├── styles/
 │   └── globals.css         # Global styles
 ├── next.config.js          # Next.js configuration
